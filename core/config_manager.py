@@ -11,8 +11,8 @@ class ConfigManager:
     """
 
     DEFAULT_CONFIG = {
-        "hour": 03,
-        "minute": 00,
+        "hour": 3,
+        "minute": 0,
         "real_restart": True
     }
 

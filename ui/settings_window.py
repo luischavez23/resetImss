@@ -5,11 +5,10 @@ from tkinter import ttk
 
 from core.config_manager import ConfigManager
 
-
 class SettingsWindow:
 
-    WINDOW_WIDTH = 360
-    WINDOW_HEIGHT = 300
+    WINDOW_WIDTH = 250
+    WINDOW_HEIGHT = 240
 
     def __init__(self, config: ConfigManager):
 
@@ -17,6 +16,7 @@ class SettingsWindow:
 
         self.root = tk.Tk()
 
+        self.root.iconbitmap("assets\\reiniciar.ico")
         self.hour = tk.StringVar(value=self._config.hour)
         self.minute = tk.StringVar(value=self._config.minute)
         self.real_restart = tk.BooleanVar(
@@ -40,7 +40,8 @@ class SettingsWindow:
 
     def _configure_window(self) -> None:
 
-        self.root.title("Reinicio Programado")
+        self.root.title("ResetIMSS")
+        
         self.root.geometry(
             f"{self.WINDOW_WIDTH}x{self.WINDOW_HEIGHT}"
         )
@@ -76,7 +77,7 @@ class SettingsWindow:
 
         title = ttk.Label(
             frame,
-            text="Configuración del reinicio",
+            text="Configuración de reinicio",
             font=("Segoe UI", 11, "bold")
         )
 
@@ -100,7 +101,7 @@ class SettingsWindow:
             font=("Segoe UI", 9)
         )
 
-        self.current_label.pack(pady=(0, 15))
+        # self.current_label.pack(pady=(0, 15))
 
         ttk.Button(
             frame,
@@ -161,7 +162,7 @@ class SettingsWindow:
         self._config.hour = int(self.hour.get())
         self._config.minute = int(self.minute.get())
         self._config.real_restart = self.real_restart.get()
-
+       
         self._update_label()
 
     def _update_label(self) -> None:

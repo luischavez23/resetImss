@@ -144,15 +144,14 @@ class Scheduler:
         if minutes_left in self._notifications_sent:
             return
 
-        message = (
+        message =(
             "AVISO IMPORTANTE\n\n"
-            f"El equipo se reiniciará automáticamente a las "
-            f"{self._config.hour:02}:{self._config.minute:02}.\n\n"
-            f"Tiempo restante: {minutes_left} minutos.\n\n"
-            "Guarde su trabajo."
+            f"El equipo se reiniciará automáticamente en {minutes_left} minutos.\n\n"
+            f"¿Deseas posponer 10 minutos?"
+       
         )
 
-        self._notifier.warning(
+        self._notifier.info(
             "Reinicio Programado",
             message,
         )
@@ -164,4 +163,4 @@ class Scheduler:
         Ejecuta el reinicio del sistema.
         """
 
-        self._system.restart()
+        self._system.restart() 

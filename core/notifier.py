@@ -1,33 +1,44 @@
 from __future__ import annotations
-
+from typing import Optional
 import ctypes
 
 
 class Notifier:
     """
     Se encarga de mostrar mensajes al usuario mediante
-    cuadros de diálogo de Windows.
+    cuadros de diálogo de windows.
     """
 
     ICON_ERROR = 0x10
     ICON_WARNING = 0x30
     ICON_INFORMATION = 0x40
+    
+    MB_OK = 0x0
+    MB_YESNO = 0x04
+    IDYES = 6
+    IDNO = 7
 
     def _show(
         self,
         title: str,
         message: str,
         icon: int,
+        window:Optional[int]=None,
     ) -> None:
         """
         Muestra un cuadro de diálogo de Windows.
         """
-        ctypes.windll.user32.MessageBoxW(
+        response = ctypes.windll.user32.MessageBoxW(
             0,
             message,
             title,
-            icon
+            window | icon,
         )
+        
+        if response == self.IDYES:
+            print("Click Yes")
+        else:
+            print("Click Not")
 
     def info(self, title: str, message: str) -> None:
         """
@@ -37,7 +48,10 @@ class Notifier:
             title=title,
             message=message,
             icon=self.ICON_INFORMATION,
+            window=self.MB_YESNO,
         )
+            
+        
 
     def warning(self, title: str, message: str) -> None:
         """
@@ -47,6 +61,7 @@ class Notifier:
             title=title,
             message=message,
             icon=self.ICON_WARNING,
+            window=self.MB_OK,
         )
 
     def error(self, title: str, message: str) -> None:
@@ -57,6 +72,7 @@ class Notifier:
             title=title,
             message=message,
             icon=self.ICON_ERROR,
+            window=self.MB_OK,
         )
 
     def restart_warning(
