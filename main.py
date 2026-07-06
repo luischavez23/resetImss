@@ -21,7 +21,7 @@ def main():
 
     scheduler.start()
 
-    app = SettingsWindow(config)
+    app = SettingsWindow(notifier, config, scheduler.reload_schedule,)
 
     app.run()
 

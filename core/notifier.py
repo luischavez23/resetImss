@@ -35,21 +35,21 @@ class Notifier:
             window | icon,
         )
         
-        if response == self.IDYES:
-            print("Click Yes")
-        else:
-            print("Click Not")
+        return response
+        
 
     def info(self, title: str, message: str) -> None:
         """
         Muestra un mensaje informativo.
         """
-        self._show(
+        
+        response = self._show(
             title=title,
             message=message,
             icon=self.ICON_INFORMATION,
             window=self.MB_YESNO,
         )
+        return response
             
         
 
@@ -57,43 +57,34 @@ class Notifier:
         """
         Muestra un mensaje de advertencia.
         """
-        self._show(
+        response = self._show(
             title=title,
             message=message,
             icon=self.ICON_WARNING,
             window=self.MB_OK,
         )
+        return response
+        
+    def confirmation(self, title: str, message: str) -> None:
+        """
+        Muestra un mensaje de confirmación.
+        """
+        response = self._show(
+            title=title,
+            message=message,
+            icon=self.ICON_INFORMATION,
+            window=self.MB_OK,
+        )
+        return response
 
     def error(self, title: str, message: str) -> None:
         """
         Muestra un mensaje de error.
         """
-        self._show(
+        response = self._show(
             title=title,
             message=message,
             icon=self.ICON_ERROR,
             window=self.MB_OK,
         )
-
-    def restart_warning(
-        self,
-        hour: int,
-        minute: int,
-        minutes_left: int,
-    ) -> None:
-        """
-        Muestra el aviso de reinicio programado.
-        """
-
-        message = (
-            "AVISO IMPORTANTE\n\n"
-            f"El equipo se reiniciará automáticamente a las "
-            f"{hour:02}:{minute:02}.\n\n"
-            f"Tiempo restante: {minutes_left} minutos.\n\n"
-            "Por favor guarde su trabajo y cierre las aplicaciones necesarias."
-        )
-
-        self.warning(
-            title="Reinicio Programado",
-            message=message,
-        )
+        return response

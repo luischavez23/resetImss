@@ -4,25 +4,27 @@ import tkinter as tk
 from tkinter import ttk
 
 from core.config_manager import ConfigManager
+from core.notifier import Notifier
 
 class SettingsWindow:
 
     WINDOW_WIDTH = 250
     WINDOW_HEIGHT = 240
 
-    def __init__(self, config: ConfigManager):
+    def __init__(self, notifier: Notifier, config: ConfigManager, reload_schedule):
 
         self._config = config
+        self._reload_schedule = reload_schedule
 
         self.root = tk.Tk()
 
         self.root.iconbitmap("assets\\reiniciar.ico")
-        self.hour = tk.StringVar(value=self._config.hour)
-        self.minute = tk.StringVar(value=self._config.minute)
+        self.hour = tk.StringVar(value=f"{self._config.hour:02}")
+        self.minute = tk.StringVar(value=f"{self._config.minute:02}")
         self.real_restart = tk.BooleanVar(
             value=self._config.real_restart
         )
-
+        self._notifier = notifier
         self._configure_window()
         self._build()
         self._center_window()
@@ -96,12 +98,10 @@ class SettingsWindow:
             variable=self.real_restart
         ).pack(anchor="w", pady=15)
 
-        self.current_label = ttk.Label(
-            frame,
-            font=("Segoe UI", 9)
-        )
-
-        # self.current_label.pack(pady=(0, 15))
+        # self.current_label = ttk.Label(
+        #     frame,
+        #     font=("Segoe UI", 9)
+        # )
 
         ttk.Button(
             frame,
@@ -109,7 +109,6 @@ class SettingsWindow:
             command=self._save
         ).pack(fill="x")
 
-        self._update_label()
 
     def _build_time(self, parent) -> None:
 
@@ -126,9 +125,9 @@ class SettingsWindow:
             time_frame,
             textvariable=self.hour,
             state="readonly",
-            width=4,
+            width=6,
             justify="center",
-            values=[f"{i:02}" for i in range(24)]
+            values=[f"{i:02}" for i in range(24)],
         )
 
         self.hour_box.pack(side="left")
@@ -146,9 +145,9 @@ class SettingsWindow:
             time_frame,
             textvariable=self.minute,
             state="readonly",
-            width=4,
+            width=6,
             justify="center",
-            values=[f"{i:02}" for i in range(60)]
+            values=[f"{i:02}" for i in range(60)],
         )
 
         self.minute_box.pack(side="left")
@@ -162,15 +161,13 @@ class SettingsWindow:
         self._config.hour = int(self.hour.get())
         self._config.minute = int(self.minute.get())
         self._config.real_restart = self.real_restart.get()
-       
-        self._update_label()
-
-    def _update_label(self) -> None:
-
-        self.current_label.config(
-            text=(
-                "Reinicio programado: "
-                f"{self._config.hour:02}:"
-                f"{self._config.minute:02}"
-            )
+        self._reload_schedule()
+        message = (
+            f"El equipo se reiniciará automáticamente a las "
+            f"{self._config.hour:02}:{self._config.minute:02} Hrs.\n\n"
         )
+        self._notifier.confirmation(
+            "Registro Confirmado",
+            message=message
+        )
+       
