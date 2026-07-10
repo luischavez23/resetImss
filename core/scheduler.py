@@ -21,7 +21,7 @@ class Scheduler:
     """
 
     # Minutos antes del reinicio en los que se mostrará un aviso
-    NOTIFICATION_MINUTES = (15, 10, 5)
+    NOTIFICATION_MINUTES = (10, 5)
 
     # Intervalo de revisión (segundos)
     CHECK_INTERVAL = 20
@@ -77,7 +77,7 @@ class Scheduler:
         self._running = False
 
         if self._thread:
-            self._thread.join(timeout=1)
+            self._thread.join()
 
     # ---------------------------------------------------------
     # Métodos privados
@@ -89,26 +89,24 @@ class Scheduler:
         """
 
         while self._running:
+
+            # Si cambió el archivo de configuración,
+            # recarga la configuración.
+            if self._config.has_changed():
+                self._config.load()
+                self.reload_schedule()
+
             minutes_left = self._minutes_until_restart()
 
-            print(
-                    f"\rHora actual: "
-                    f"{datetime.datetime.now():%H:%M:%S} "
-                    f"| Reinicio: "
-                    f"{self._next_restart:%H:%M} "
-                    f"| Restan {minutes_left} minutos",
-                    end=""
-                )
+            self._print_status(minutes_left)
+
             self._check_notifications(minutes_left)
 
             if minutes_left == 0:
 
                 self._restart()
 
-                # Espera para evitar múltiples reinicios
                 time.sleep(60)
-
-                self._notifications_sent.clear()
 
             time.sleep(self.CHECK_INTERVAL)
 
@@ -122,11 +120,29 @@ class Scheduler:
 
         difference = self._next_restart - datetime.datetime.now()
 
-        minutes = int(difference.total_seconds() // 60)
+        return max(
+            0,
+            int(difference.total_seconds() // 60)
+        )
+        
+    def _print_status(
+        self,
+        minutes_left: int,
+    ) -> None:
+        """
+        Muestra el estado actual del programador.
+        """
 
-        print(f"Next restart:   {self._next_restart}")
-        return max(0, minutes)
-
+        print(
+            f"\rHora actual: "
+            f"{datetime.datetime.now():%H:%M:%S} "
+            f"| Reinicio: "
+            f"{self._next_restart:%H:%M} "
+            f"| Restan {minutes_left} minutos",
+            end="",
+            flush=True,
+        )
+        
     def _check_notifications(
         self,
         minutes_left: int,
@@ -160,6 +176,10 @@ class Scheduler:
         self._notifications_sent.add(minutes_left)
     
     def _calculate_next_restart(self) -> datetime.datetime:
+        """
+        Calcula la próxima fecha y hora de reinicio.
+        """
+
         now = datetime.datetime.now()
 
         target = now.replace(
@@ -168,10 +188,6 @@ class Scheduler:
             second=0,
             microsecond=0,
         )
-        
-        print(f"Hora actual      : {now}")
-        print(f"Hora configurada : {self._config.hour:02}:{self._config.minute:02}")
-        print(f"Target inicial   : {target}")
 
         if target <= now:
             target += datetime.timedelta(days=1)

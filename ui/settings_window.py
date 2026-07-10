@@ -5,20 +5,21 @@ from tkinter import ttk
 
 from core.config_manager import ConfigManager
 from core.notifier import Notifier
+from core.resources import resource_path
 
 class SettingsWindow:
 
     WINDOW_WIDTH = 250
     WINDOW_HEIGHT = 240
 
-    def __init__(self, notifier: Notifier, config: ConfigManager, reload_schedule):
+    def __init__(self, notifier: Notifier, config: ConfigManager):
 
         self._config = config
-        self._reload_schedule = reload_schedule
+
 
         self.root = tk.Tk()
 
-        self.root.iconbitmap("assets\\reiniciar.ico")
+        self.root.iconbitmap(resource_path("assets/reiniciar.ico"))
         self.hour = tk.StringVar(value=f"{self._config.hour:02}")
         self.minute = tk.StringVar(value=f"{self._config.minute:02}")
         self.real_restart = tk.BooleanVar(
@@ -98,11 +99,6 @@ class SettingsWindow:
             variable=self.real_restart
         ).pack(anchor="w", pady=15)
 
-        # self.current_label = ttk.Label(
-        #     frame,
-        #     font=("Segoe UI", 9)
-        # )
-
         ttk.Button(
             frame,
             text="Guardar configuración",
@@ -157,11 +153,11 @@ class SettingsWindow:
     # ---------------------------------------------------------
 
     def _save(self) -> None:
-
-        self._config.hour = int(self.hour.get())
-        self._config.minute = int(self.minute.get())
-        self._config.real_restart = self.real_restart.get()
-        self._reload_schedule()
+        self._config.update(
+            hour=int(self.hour.get()),
+            minute=int(self.minute.get()),
+            real_restart=self.real_restart.get(),
+        )
         message = (
             f"El equipo se reiniciará automáticamente a las "
             f"{self._config.hour:02}:{self._config.minute:02} Hrs.\n\n"
@@ -170,4 +166,5 @@ class SettingsWindow:
             "Registro Confirmado",
             message=message
         )
+        
        

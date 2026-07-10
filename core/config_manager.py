@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import json
+import os
+
+from core.logger import Logger
 from pathlib import Path
 
 
@@ -18,11 +21,26 @@ class ConfigManager:
 
     def __init__(self, file_name: str = "config.json"):
 
-        self.path = Path(file_name)
+        base_path = self._get_base_path()
+        self.path = base_path / file_name
         self._config = {}
-
+        print(f"Config utilizada: {self.path}")
         self.load()
 
+    # ---------------------------------------------------------
+    # Métodos públicos
+    # ---------------------------------------------------------
+    @staticmethod
+    def _get_base_path() -> Path:
+        """
+        Carpeta donde se guarda la configuración compartida.
+        """
+
+        base = Path(os.environ["PROGRAMDATA"]) / "ResetIMSS"
+        base.mkdir(parents=True, exist_ok=True)
+
+        return base
+    
     def load(self) -> None:
         """
         Lee el archivo JSON.
@@ -31,26 +49,105 @@ class ConfigManager:
 
         if not self.path.exists():
 
+            Logger.warning(
+                "No existe config.json. Se creará uno nuevo."
+            )
+
             self._config = self.DEFAULT_CONFIG.copy()
 
             self.save()
 
             return
 
-        with self.path.open("r", encoding="utf-8") as file:
-            self._config = json.load(file)
+        try:
+
+            with self.path.open(
+                "r",
+                encoding="utf-8"
+            ) as file:
+
+                self._config = json.load(file)
+
+            self._last_modified = os.path.getmtime(self.path)
+
+        except json.JSONDecodeError:
+
+            Logger.error(
+                "config.json está dañado. "
+                "Se cargará la configuración por defecto."
+            )
+
+            self._config = self.DEFAULT_CONFIG.copy()
+
+            self.save()
+
+        except OSError as ex:
+
+            Logger.error(
+                f"No fue posible leer config.json: {ex}"
+            )
 
     def save(self) -> None:
         """
         Guarda la configuración.
         """
 
-        with self.path.open("w", encoding="utf-8") as file:
-            json.dump(
-                self._config,
-                file,
-                indent=4
+        try:
+
+            with self.path.open(
+                "w",
+                encoding="utf-8"
+            ) as file:
+
+                json.dump(
+                    self._config,
+                    file,
+                    indent=4
+                )
+
+            self._last_modified = os.path.getmtime(self.path)
+
+        except OSError as ex:
+
+            Logger.error(
+                f"No fue posible guardar config.json: {ex}"
             )
+            
+    def has_changed(self) -> bool:
+        """
+        Indica si el archivo de configuración fue modificado.
+        """
+
+        if not self.path.exists():
+            return False
+
+        current_modified = os.path.getmtime(self.path)
+
+        if current_modified != self._last_modified:
+            self._last_modified = current_modified
+            return True
+
+        return False
+    
+    def update(
+        self,
+        hour: int,
+        minute: int,
+        real_restart: bool,
+    ) -> None:
+        """
+        Actualiza toda la configuración y la guarda una sola vez.
+        """
+
+        self._config["hour"] = hour
+        self._config["minute"] = minute
+        self._config["real_restart"] = real_restart
+
+        self.save()
+    
+    # ---------------------------------------------------------
+    # Propiedades
+    # ---------------------------------------------------------
 
     @property
     def hour(self) -> int:
@@ -60,7 +157,6 @@ class ConfigManager:
     def hour(self, value: int):
 
         self._config["hour"] = value
-
         self.save()
 
     @property
@@ -71,7 +167,6 @@ class ConfigManager:
     def minute(self, value: int):
 
         self._config["minute"] = value
-
         self.save()
 
     @property
@@ -82,5 +177,4 @@ class ConfigManager:
     def real_restart(self, value: bool):
 
         self._config["real_restart"] = value
-
         self.save()

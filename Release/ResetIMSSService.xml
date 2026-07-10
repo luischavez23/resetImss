@@ -1,0 +1,18 @@
+<service>
+
+  <id>ResetIMSS</id>
+
+  <name>ResetIMSS</name>
+
+  <description>Servicio de reinicio automático</description>
+
+  <executable>ResetIMSSCore.exe</executable>
+
+  <workingdirectory>%BASE%</workingdirectory>
+
+  <log mode="roll-by-size">
+    <sizeThreshold>10240</sizeThreshold>
+    <keepFiles>5</keepFiles>
+  </log>
+
+</service>
