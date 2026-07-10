@@ -1,8 +1,0 @@
-2026-07-10 10:19:06,634 DEBUG - Starting WinSW in service mode
-2026-07-10 10:19:06,955 INFO  - Starting ResetIMSSCore.exe 
-2026-07-10 10:19:07,031 INFO  - Started process 6644
-2026-07-10 10:19:07,050 DEBUG - Forwarding logs of the process System.Diagnostics.Process (ResetIMSSCore) to WinSW.SizeBasedRollingLogAppender
-2026-07-10 11:20:36,954 DEBUG - Starting WinSW in service mode
-2026-07-10 11:20:37,149 INFO  - Starting ResetIMSSCore.exe 
-2026-07-10 11:20:37,195 INFO  - Started process 10676
-2026-07-10 11:20:37,217 DEBUG - Forwarding logs of the process System.Diagnostics.Process (ResetIMSSCore) to WinSW.SizeBasedRollingLogAppender
