@@ -23,8 +23,8 @@ class Notifier:
         title: str,
         message: str,
         icon: int,
-        window:Optional[int]=None,
-    ) -> None:
+        window: int = 0,
+    ):
         """
         Muestra un cuadro de diálogo de Windows.
         """

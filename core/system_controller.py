@@ -3,6 +3,9 @@ from __future__ import annotations
 import os
 
 from core.config_manager import ConfigManager
+import subprocess
+
+from core.logger import Logger
 
 
 class SystemController:
@@ -18,10 +21,23 @@ class SystemController:
         Reinicia el equipo.
         """
 
-        if self._config.real_restart:
-            os.system("shutdown /r /t 0")
-        else:
-            print("\n[SIMULACIÓN] Reinicio del sistema.")
+        Logger.info(f"real_restart = {self._config.real_restart}")
+
+        if not self._config.real_restart:
+            Logger.info("[SIMULACIÓN] Reinicio del sistema.")
+            return
+
+        Logger.info("Ejecutando: shutdown /r /t 0")
+
+        result = subprocess.run(
+            ["shutdown", "/r", "/f","/t", "0"],
+            capture_output=True,
+            text=True,
+        )
+
+        Logger.info(f"Código de salida: {result.returncode}")
+        Logger.info(f"stdout: {result.stdout}")
+        Logger.info(f"stderr: {result.stderr}")
 
     def shutdown(self) -> None:
         """
