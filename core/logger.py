@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
+from datetime import datetime
+
 
 
 class Logger:
@@ -27,7 +29,8 @@ class Logger:
         print(log_dir)
         log_dir.mkdir(parents=True, exist_ok=True)
 
-        log_file = log_dir / "resetimss.log"
+        #log_file = log_dir / "resetimss.log"
+        log_file = log_dir / f"resetimss_{datetime.now():%Y-%m-%d}.log"
 
         logging.basicConfig(
             level=logging.INFO,

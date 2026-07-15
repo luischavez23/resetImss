@@ -39,6 +39,11 @@ class ResetIMSSApp:
         """
         Inicia la aplicación.
         """
+        if not self._config.loaded:
+            Logger.error(
+                "No existe configuración. Ejecute ResetIMSSConfig."
+            )
+            return
 
         Logger.info("Iniciando ResetIMSS Service")
 

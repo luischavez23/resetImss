@@ -91,8 +91,11 @@ class Scheduler:
         Logger.info("Scheduler iniciado")
 
         while self._running:
+            changed = self._config.has_changed()
+            Logger.info(f"has_changed = {changed}")
             try:
-                if self._config.has_changed():
+                if changed:
+                    Logger.info("Se detectó cambio en config.json")
                     self._config.load()
                     self.reload_schedule()
 
@@ -220,6 +223,7 @@ class Scheduler:
         """
         self._next_restart = self._calculate_next_restart()
         self._notifications_sent.clear()
+        Logger.info(f"Nuevo horario cargado: {self._config.hour:02}:{self._config.minute:02}")
 
     def _restart(self) -> None:
         Logger.info("Entrando a _restart()")

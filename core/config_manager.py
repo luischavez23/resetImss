@@ -24,7 +24,6 @@ class ConfigManager:
         base_path = self._get_base_path()
         self.path = base_path / file_name
         self._config = {}
-        print(f"Config utilizada: {self.path}")
         self.load()
 
     # ---------------------------------------------------------
@@ -44,18 +43,18 @@ class ConfigManager:
     def load(self) -> None:
         """
         Lee el archivo JSON.
-        Si no existe, crea uno nuevo.
+        Si no existe, carga la configuración por defecto.
         """
 
         if not self.path.exists():
 
             Logger.warning(
-                "No existe config.json. Se creará uno nuevo."
+                "No existe config.json."
             )
 
             self._config = self.DEFAULT_CONFIG.copy()
-
-            self.save()
+            
+            self._last_modified = 0
 
             return
 
@@ -88,11 +87,12 @@ class ConfigManager:
             )
 
     def save(self) -> None:
-        """
-        Guarda la configuración.
-        """
-
         try:
+
+            self.path.parent.mkdir(
+                parents=True,
+                exist_ok=True
+            )
 
             with self.path.open(
                 "w",
@@ -106,6 +106,10 @@ class ConfigManager:
                 )
 
             self._last_modified = os.path.getmtime(self.path)
+
+            Logger.info(
+                f"Configuración guardada en: {self.path}"
+            )
 
         except OSError as ex:
 
@@ -178,3 +182,7 @@ class ConfigManager:
 
         self._config["real_restart"] = value
         self.save()
+    
+    @property
+    def loaded(self) -> bool:
+        return bool(self._config)
