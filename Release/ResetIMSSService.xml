@@ -1,18 +1,19 @@
 <service>
+    <id>ResetIMSS</id>
+    <name>ResetIMSS</name>
 
-  <id>ResetIMSS</id>
+    <description>
+        Servicio de reinicio programado de equipos.
+    </description>
 
-  <name>ResetIMSS</name>
+    <executable>%BASE%\ResetIMSSCore.exe</executable>
+    <workingdirectory>%BASE%</workingdirectory>
 
-  <description>Servicio de reinicio automático</description>
+    <startmode>Automatic</startmode>
 
-  <executable>ResetIMSSCore.exe</executable>
+    <onfailure action="restart" delay="10 sec"/>
+    <onfailure action="restart" delay="30 sec"/>
+    <onfailure action="none"/>
 
-  <workingdirectory>%BASE%</workingdirectory>
-
-  <log mode="roll-by-size">
-    <sizeThreshold>10240</sizeThreshold>
-    <keepFiles>5</keepFiles>
-  </log>
-
+    <stoptimeout>15 sec</stoptimeout>
 </service>

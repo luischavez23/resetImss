@@ -42,7 +42,7 @@ class NotifierWindow:
         )
 
         thread.start()
-        
+    
     @staticmethod
     def _create_window(
         minutes_left: int,
@@ -79,14 +79,33 @@ class NotifierWindow:
 
         root.geometry(f"{width}x{height}+{x}+{y}")
 
-        def close_window():
+        # -------------------------------------------------
+        # Cierre seguro
+        # -------------------------------------------------
+
+        window_closed = False
+
+        def close_window() -> None:
+            nonlocal window_closed
+
+            if window_closed:
+                return
+
+            window_closed = True
+
             on_close()
-            root.destroy()
+
+            if root.winfo_exists():
+                root.destroy()
 
         root.protocol(
             "WM_DELETE_WINDOW",
             close_window,
         )
+
+        # -------------------------------------------------
+        # Estilos
+        # -------------------------------------------------
 
         style = ttk.Style()
 
@@ -113,9 +132,9 @@ class NotifierWindow:
         frame = ttk.Frame(root, padding=20)
         frame.pack(fill="both", expand=True)
 
-        # --------------------------------------------
+        # -------------------------------------------------
         # Encabezado
-        # --------------------------------------------
+        # -------------------------------------------------
 
         ttk.Label(
             frame,
@@ -140,9 +159,9 @@ class NotifierWindow:
 
         ttk.Separator(frame).pack(fill="x", pady=10)
 
-        # --------------------------------------------
+        # -------------------------------------------------
         # Tiempo restante
-        # --------------------------------------------
+        # -------------------------------------------------
 
         ttk.Label(
             frame,
@@ -156,14 +175,13 @@ class NotifierWindow:
             style="Big.TLabel",
         ).pack(pady=(0, 15))
 
-        # --------------------------------------------
+        # -------------------------------------------------
         # Botones
-        # --------------------------------------------
-        
+        # -------------------------------------------------
+
         def postpone():
             on_postpone()
-            on_close()
-            root.destroy()
+            close_window()
 
         buttons = ttk.Frame(frame)
         buttons.pack(fill="x", pady=(10, 0))
@@ -195,6 +213,16 @@ class NotifierWindow:
             sticky="ew",
             padx=(6, 0),
             ipady=10,
-)
+        )
+
+        # -------------------------------------------------
+        # Si sigue abierta cuando llegue el aviso de 5
+        # minutos, se cierra automáticamente para permitir
+        # mostrar la nueva ventana.
+        # -------------------------------------------------
+
+        if minutes_left > 5:
+            milliseconds = (minutes_left - 5) * 60 * 1000
+            root.after(milliseconds, close_window)
 
         root.mainloop()

@@ -11,7 +11,7 @@ from core.notifier import Notifier
 from core.notifier_window import NotifierWindow
 from core.logger import Logger
 from core.system_controller import SystemController
-
+from core.runtime_manager import RuntimeManager
 
 class Scheduler:
     """
@@ -43,12 +43,13 @@ class Scheduler:
 
         self._running = False
         self._thread: threading.Thread | None = None
-
+        
         # Guarda los avisos que ya fueron enviados
         self._notifications_sent: set[int] = set()
         
         self._next_restart: datetime.datetime | None = None
         self._notification_open = False
+        self._runtime = RuntimeManager()
 
     # ---------------------------------------------------------
     # Métodos públicos
@@ -64,6 +65,10 @@ class Scheduler:
         
         self._next_restart = self._calculate_next_restart()
 
+        self._runtime.save_state(
+            self._next_restart
+        )
+        
         self._running = True
 
         self._thread = threading.Thread(
@@ -98,12 +103,17 @@ class Scheduler:
                     Logger.info("Se detectó cambio en config.json")
                     self._config.load()
                     self.reload_schedule()
+                
+                command = self._runtime.consume_command()
+
+                if command:
+                    self._process_command(command)
 
                 minutes_left = self._minutes_until_restart()
 
                 self._print_status(minutes_left)
                 
-                self._check_notifications(minutes_left)
+                #self._check_notifications(minutes_left)
 
                 Logger.info(f"minutes_left={minutes_left}")
 
@@ -223,8 +233,11 @@ class Scheduler:
         """
         self._next_restart = self._calculate_next_restart()
         self._notifications_sent.clear()
+        self._runtime.save_state(
+            self._next_restart
+        )
         Logger.info(f"Nuevo horario cargado: {self._config.hour:02}:{self._config.minute:02}")
-
+        
     def _restart(self) -> None:
         Logger.info("Entrando a _restart()")
 
@@ -234,3 +247,47 @@ class Scheduler:
 
         self._next_restart = self._calculate_next_restart()
         self._notifications_sent.clear()
+        
+        self._runtime.save_state(
+            self._next_restart
+        )
+    
+    def _process_command(
+        self,
+        command: dict,
+    ) -> None:
+        """
+        Procesa órdenes enviadas por ResetIMSSNotifier.
+        """
+
+        if command.get("command") != "postpone":
+            return
+
+        try:
+            minutes = int(command.get("minutes", 10))
+        except (TypeError, ValueError):
+            Logger.warning(
+                "Solicitud de posposición inválida."
+            )
+            return
+
+        if minutes <= 0 or minutes > 120:
+            Logger.warning(
+                f"Minutos de posposición inválidos: {minutes}"
+            )
+            return
+
+        self._next_restart += datetime.timedelta(
+            minutes=minutes
+        )
+
+        self._notifications_sent.clear()
+
+        self._runtime.save_state(
+            self._next_restart
+        )
+
+        Logger.info(
+            f"Reinicio pospuesto {minutes} minutos. "
+            f"Nuevo reinicio: {self._next_restart:%H:%M}"
+        )
